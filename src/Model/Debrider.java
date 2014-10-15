@@ -34,7 +34,7 @@ public class Debrider {
         this.link = link;
     }
 
-    public void execDeb(){
+    public String execDeb(){
 
         Runtime runtime = Runtime.getRuntime();
         String cmd = "/home/vbrice/debrid/undebrid.sh " + link;
@@ -53,7 +53,59 @@ public class Debrider {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return undebridLink;
     }
 
+    public String execDeb(String host){
+
+        Runtime runtime = Runtime.getRuntime();
+        String cmd = "/home/vbrice/debrid/undebrid.sh " + host;
+        String undebridLink="";
+        try {
+            InputStream inputStream = runtime.exec(cmd).getInputStream();
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            String uL = "";
+            while (null != (uL= bufferedReader.readLine())){
+                undebridLink = undebridLink.concat(uL);
+            }
+
+
+            this.setRes(1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return undebridLink;
+    }
+
+    public String[] execDebByFile(String path) throws IOException {
+        String ligne = "";
+        String fichier = path;
+        BufferedReader ficTexte;
+        try {
+            ficTexte = new BufferedReader(new FileReader(new File(fichier)));
+            if (ficTexte == null) {
+                throw new FileNotFoundException("Fichier non trouvé: "
+                        + fichier);
+            }
+            do {
+                ligne = ficTexte.readLine();
+                if (ligne != null) {
+                    System.out.println(execDeb(ligne));
+                }
+            } while (ficTexte != null);
+            ficTexte.close();
+            System.out.println("\n");
+        } catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+
+    }
 
 }
