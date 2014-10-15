@@ -1,63 +1,79 @@
 package Model;
 
-import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 
-/**
- * Created by vbrice on 10/14/14.
- */
-public class Downloader {
+public class Downloader
+{
 
-    int res;
-    String link;
+    public static URLConnection checkURL(String host){
 
-    public Downloader(String link) {
-        this.link = link;
-    }
-
-    public Downloader(){
-
-    }
-
-    public int getRes() {
-        return res;
-    }
-
-    public void setRes(int res) {
-        this.res = res;
-    }
-
-    public String getLink() {
-        return link;
-    }
-
-    public void setLink(String link) {
-        this.link = link;
-    }
-
-    public void execDown(){
-
-        Runtime runtime = Runtime.getRuntime();
-        String cmd = "wget " + link;
-        String trace="";
+        URL url = null;
+        URLConnection connection = null;
         try {
-            InputStream inputStream = runtime.exec(cmd).getInputStream();
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            String uL = "";
-            while (null != (uL= bufferedReader.readLine())){
-                trace = trace.concat(uL);
-                System.out.println(trace);
+            url = new URL(host);
+            connection = url.openConnection();
+            int fileLength = connection.getContentLength();
+
+            if (fileLength == -1)
+            {
+                System.out.println("Invalide URL or file.");
+                connection = null;
             }
 
-            this.setLink(trace);
-            this.setRes(1);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return connection;
     }
 
+	public static void getFile(String host) {
+		InputStream input = null;
+		FileOutputStream writeFile = null;
 
+		try
+		{
+			URL url = new URL(host);
+			URLConnection connection = checkURL(host);
+			int fileLength = connection.getContentLength();
+
+			if (fileLength == -1)
+			{
+				System.out.println("Invalide URL or file.");
+				return;
+			}
+
+
+			input = connection.getInputStream();
+			String fileName = url.getFile().substring(url.getFile().lastIndexOf('/') + 1);
+			writeFile = new FileOutputStream(fileName);
+			byte[] buffer = new byte[1024];
+			int read;
+
+			while ((read = input.read(buffer)) > 0)
+				writeFile.write(buffer, 0, read);
+			writeFile.flush();
+		}
+		catch (IOException e)
+		{
+			System.out.println("Error while trying to download the file.");
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				writeFile.close();
+				input.close();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
 }
